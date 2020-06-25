@@ -3,12 +3,8 @@ package cn.makiser.fontviewer;
 import cn.makiser.fontviewer.ic.JTextFieldHintListener;
 
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -31,7 +27,7 @@ public class MainFrame extends JFrame {
         tf = new JTextField();
         JScrollPane sp2 = new JScrollPane(tf);
         tf.addFocusListener(new JTextFieldHintListener(tf, "键入文字预览(支持HTML)"));
-        tf.setFont(new Font("Default", Font.PLAIN, 18));
+        tf.setFont(Run.getMainFont(18));
         tf.setBounds(0, 0, 200, 50);
         tf.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -41,26 +37,30 @@ public class MainFrame extends JFrame {
             @Override
             public void changedUpdate(DocumentEvent e) {updateText();}
         }); //文本改变监听
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(1, 2));
+        JPanel panel = new JPanel(new FlowLayout());
         b_choose = new JButton("选择字体");
         b_load = new JButton("加载文件");
         b_load.addActionListener(e -> {
+            //字体选择器
             FileDialog d = new FileDialog(MainFrame.this,
                     "选择字体文件", FileDialog.LOAD);
             d.setModal(true);
             d.setVisible(true);
             try {
-                font = getFont(new File(d.getDirectory() + d.getFile()))
-                        .deriveFont((float) font.getSize());
-                System.out.println(font.getSize());
-                updateFont();
+                if (!(d.getFile() == null)) {
+                    font = getFont(new File(d.getDirectory() + d.getFile()))
+                            .deriveFont((float) font.getSize());
+                    System.out.println(font.getSize());
+                    updateFont();
+                }
             } catch (Exception e1) {
                 e1.printStackTrace();
+                new ExceptionDialog(MainFrame.this, e1).setVisible(true);
             }
         });
         b_size = new JButton("字号: 20");
         b_size.addActionListener(e -> {
+            //修改字号
             FontSizeDialog dialog = new FontSizeDialog(font.getSize(),MainFrame.this);
             dialog.setVisible(true);
         });
