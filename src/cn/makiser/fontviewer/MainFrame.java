@@ -3,8 +3,9 @@ package cn.makiser.fontviewer;
 import cn.makiser.fontviewer.ic.JTextFieldHintListener;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -21,7 +22,8 @@ public class MainFrame extends JFrame {
     //初始化方法
     protected void init() {
         c = getContentPane();
-        c.setLayout(new GridLayout(3, 1));
+        GridBagLayout layout = new GridBagLayout();
+        c.setLayout(layout);
         l = new JLabel("字体预览", JLabel.CENTER);
         JScrollPane sp1 = new JScrollPane(l);
         tf = new JTextField();
@@ -37,7 +39,17 @@ public class MainFrame extends JFrame {
             @Override
             public void changedUpdate(DocumentEvent e) {updateText();}
         }); //文本改变监听
-        JPanel panel = new JPanel(new FlowLayout());
+        tf.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(MainFrame.this,
+                        "由于Swing组件限制, 如需换行, 请在文本开头和结尾分别添" +
+                                "加\"<html>\"和\"</html>\", \n并在需要换行处添加HTML的\"<br>\"标签" +
+                                "来实现换行.",
+                        "提示", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }); //提示使用换行标签
+        JPanel panel = new JPanel(new GridLayout(1, 3));
         b_choose = new JButton("选择字体");
         b_load = new JButton("加载文件");
         b_load.addActionListener(e -> {
@@ -48,14 +60,14 @@ public class MainFrame extends JFrame {
             d.setVisible(true);
             try {
                 if (!(d.getFile() == null)) {
-                    font = getFont(new File(d.getDirectory() + d.getFile()))
+                    font = Run.getFont(new File(d.getDirectory() + d.getFile()))
                             .deriveFont((float) font.getSize());
                     System.out.println(font.getSize());
                     updateFont();
                 }
             } catch (Exception e1) {
                 e1.printStackTrace();
-                new ExceptionDialog(MainFrame.this, e1).setVisible(true);
+                new ExceptionDialog(MainFrame.this, null, e1).show_();
             }
         });
         b_size = new JButton("字号: 20");
@@ -66,13 +78,28 @@ public class MainFrame extends JFrame {
         });
         add_(panel, b_choose, b_load, b_size);
         add_(c, sp1, sp2, panel);
+        //安排布局
+        sp2.setPreferredSize(new Dimension(0, 60));
+        GridBagConstraints s = new GridBagConstraints();
+        s.fill = GridBagConstraints.BOTH;
+        s.gridwidth = 3; s.gridheight = 1; s.gridx = 0; s.gridy = 0;
+        s.weightx = 1; s.weighty = 0.9;
+        layout.setConstraints(sp1, s);
+        s.fill = GridBagConstraints.BOTH;
+        s.gridwidth = 3; s.gridheight = 1; s.gridx = 0; s.gridy = 1;
+        s.weightx = 1; s.weighty = 0;
+        layout.setConstraints(sp2, s);
+        s.fill = GridBagConstraints.HORIZONTAL;
+        s.gridwidth = 3; s.gridheight = 1; s.gridx = 0; s.gridy = 2;
+        s.weightx = 1; s.weighty = 0;
+        layout.setConstraints(panel, s);
     }
     //随文件初始化
     protected void init(File file) {
         init();
         Font f = null;
         try {
-            f = getFont(file);
+            f = Run.getFont(file);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -88,11 +115,12 @@ public class MainFrame extends JFrame {
     //更新字体
     public void updateFont() {
         l.setFont(font);
+        setTitle(font.getName() + " - FontViewer");
     }
 
     //设置字号,主要给FontSizeDialog用
     protected void setFontSize(int size) {
-        font = new Font(font.getName(), font.getStyle(), size);
+        font = font.deriveFont((float) size);
         b_size.setText("字号: " + size);
         updateFont();
         System.out.println(font.getSize());
@@ -110,16 +138,6 @@ public class MainFrame extends JFrame {
         tf.setFocusable(true);
     }
 
-    //从文件加载字体
-    public static Font getFont(File file) throws IOException, FontFormatException {
-        Font font;
-//        FileInputStream fis = new FileInputStream(file);
-        if(file == null) {
-            throw new NullPointerException("文件对象为空");
-        }
-        font = Font.createFont(Font.TRUETYPE_FONT, file);
-        return font;
-    }
     //自创的Container快速添加(一个一个地执行add()简直太麻烦了qwq)
     public static void add_(Container cont, Component... comp) {
         for (Component cp : comp) {
