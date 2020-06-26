@@ -17,10 +17,12 @@ public class Run {
     private static final int font_size = 14;
 
     public static void main(String[] args) throws Exception {
-        //检测字体文件并加载
+        //
         String s = Run.class.getProtectionDomain().getCodeSource().getLocation().getFile();
         s = URLDecoder.decode(s, "UTF-8");
         jarPath = new File(s).getAbsolutePath();
+        //检测字体文件并加载
+        System.out.println("寻找自定义字体文件...");
         Font font = findCustomFont(jarPath + "custom_font", font_size);
         findFont(font);
         //初始化窗口
@@ -53,7 +55,7 @@ public class Run {
                 findFont(font);
             }
         } else {
-            System.out.println("发现自定义字体文件, 准备应用...");
+            System.out.println("全局字体更改: " + font.getName());
             mainFont = font;
             initFont(font);
         }
@@ -81,9 +83,9 @@ public class Run {
         else fontFile = null;
         if (fontFile != null) {
             try {
+                System.out.println("发现自定义字体文件: " + fontFile.getCanonicalPath());
                 Font f = getFont(fontFile).deriveFont((float) size);
                 font = f;
-                System.out.println(f.getSize());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -94,12 +96,12 @@ public class Run {
     //某大神写的方法,可以把全局字体改掉 xD
     public static void initFont(Font font) {
         FontUIResource fontResource = new FontUIResource(font);
+        System.out.println("应用属性...");
         for(Enumeration<Object> keys = UIManager.getDefaults().keys(); keys.hasMoreElements();) {
             Object key = keys.nextElement();
             Object value = UIManager.get(key);
             if (value instanceof FontUIResource) {
                 UIManager.put(key, fontResource);
-                System.out.println("属性应用于: " + key);
             }
         }
     }
