@@ -98,6 +98,7 @@ public class MainFrame extends JFrame {
         add_(c, sp1, sp2, p3);
         //安排布局
         sp2.setPreferredSize(new Dimension(0, 60));
+        p3.setPreferredSize(new Dimension(0, 32));
         GridBagConstraints s = new GridBagConstraints();
         s.fill = GridBagConstraints.BOTH;
         s.gridwidth = 3; s.gridheight = 1; s.gridx = 0; s.gridy = 0;

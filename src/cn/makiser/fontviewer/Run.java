@@ -14,7 +14,7 @@ public class Run {
     private static Font mainFont = null;
     private static String jarPath;
 
-    private static final int font_size = 14;
+    private static final int font_size = 16;
 
     public static void main(String[] args) throws Exception {
         //
