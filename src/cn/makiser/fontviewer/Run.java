@@ -7,27 +7,22 @@ import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 
 public class Run {
     private static Font mainFont = null;
+    private static String jarPath;
 
-    public static void main(String[] args) throws ProgramArgumentException {
+    private static final int font_size = 14;
+
+    public static void main(String[] args) throws Exception {
         //检测字体文件并加载
-        Font font = findCustomFont("custom_font", 14);
-        if (font == null) {
-            mainFont = new Font("Default", Font.PLAIN, 14);
-        } else {
-            System.out.println("发现自定义字体文件, 准备应用...");
-//            try {
-//                Thread.sleep(10000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//                new ExceptionDialog(null, null, e).show_();
-//            }
-            mainFont = font;
-            initFont(font);
-        }
+        String s = Run.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        s = URLDecoder.decode(s, "UTF-8");
+        jarPath = new File(s).getAbsolutePath();
+        Font font = findCustomFont(jarPath + "custom_font", font_size);
+        findFont(font);
         //初始化窗口
         System.out.println("初始化窗口...");
         MainFrame frame = new MainFrame();
@@ -48,18 +43,38 @@ public class Run {
         System.out.println("启动窗口...");
         frame.show_();
     }
+    //递归:寻找字体
+    private static void findFont(Font font) {
+        if (font == null) {
+            font = findCustomFont("custom_font", font_size);
+            if(font == null) {
+                mainFont = new Font("Default", Font.PLAIN, font_size);
+            } else {
+                findFont(font);
+            }
+        } else {
+            System.out.println("发现自定义字体文件, 准备应用...");
+            mainFont = font;
+            initFont(font);
+        }
+    }
 
     //获取全局字体
     public static Font getMainFont(int size) {
         return mainFont.deriveFont((float) size);
     }
+    //获取JAR路径
+    public static String getJarPath() {
+        return jarPath;
+    }
 
-    public static Font findCustomFont(String filename, int size) {
+    //寻找字体
+    public static Font findCustomFont(String filepath, int size) {
         File fontFile;
         Font font = null;
-        File gf_otf = new File(filename + ".otf"),
-                gf_ttf = new File(filename + ".ttf"),
-                gf_ttc = new File(filename + ".ttc");
+        File gf_otf = new File(filepath + ".otf"),
+                gf_ttf = new File(filepath + ".ttf"),
+                gf_ttc = new File(filepath + ".ttc");
         if ((fontFile = gf_otf).exists());
         else if ((fontFile = gf_ttf).exists());
         else if ((fontFile = gf_ttc).exists());

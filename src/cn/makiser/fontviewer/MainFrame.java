@@ -114,8 +114,11 @@ public class MainFrame extends JFrame {
     }
     //更新字体
     public void updateFont() {
-        l.setFont(font);
-        setTitle(font.getName() + " - FontViewer");
+        String n = font.getName();
+        if(!n.equals("Default")) {
+            l.setFont(font);
+            setTitle(n + " - FontViewer");
+        }
     }
 
     //设置字号,主要给FontSizeDialog用
